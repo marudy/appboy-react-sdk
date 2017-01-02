@@ -14,6 +14,7 @@ RCT_ENUM_CONVERTER(ABKNotificationSubscriptionType,
 
 @implementation AppboyReactBridge
 
+
 - (dispatch_queue_t)methodQueue
 {
   return dispatch_get_main_queue();
@@ -255,9 +256,9 @@ RCT_EXPORT_METHOD(getUnreadCardCountForCategories:(NSString *)category callback:
 }
 
 RCT_EXPORT_METHOD(getNewsFeedCards:(RCTResponseSenderBlock)callback) {
-    id observer = [[NSNotificationCenter defaultCenter] addObserverForName:ABKFeedUpdatedNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+    self.observer = [[NSNotificationCenter defaultCenter] addObserverForName:ABKFeedUpdatedNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
         BOOL updateIsSuccessful = [note.userInfo[ABKFeedUpdatedIsSuccessfulKey] boolValue];
-       
+        
         if (updateIsSuccessful) {
             NSArray *cards = [[Appboy sharedInstance].feedController getNewsFeedCards];
             [self reportResultWithCallback:callback andError:nil andResult:[self mapCardsToObjects:cards]];
@@ -265,11 +266,10 @@ RCT_EXPORT_METHOD(getNewsFeedCards:(RCTResponseSenderBlock)callback) {
             [self reportResultWithCallback:callback andError:@"An error occurred retrieving the news feed cards" andResult:nil];
         }
         
-        [[NSNotificationCenter defaultCenter] removeObserver:observer];
+        [[NSNotificationCenter defaultCenter] removeObserver:self.observer];
     }];
     
     [[Appboy sharedInstance] requestFeedRefresh];
-    //[self reportResultWithCallback:callback andError:nil andResult:[self mapCardsToObjects:cards]];
 }
 
 RCT_EXPORT_METHOD(requestFeedRefresh) {
@@ -281,8 +281,7 @@ RCT_EXPORT_METHOD(logCardImpression:(NSString *)idString) {
     
     for (id card in cards) {
         ABKCard *castedCard = (ABKCard *)card;
-        
-        if (castedCard.idString == idString) {
+        if ([castedCard.idString isEqualToString:idString]) {
             [castedCard logCardImpression];
             break;
         }
@@ -295,7 +294,9 @@ RCT_EXPORT_METHOD(logCardClicked:(NSString *)idString) {
     for (id card in cards) {
         ABKCard *castedCard = (ABKCard *)card;
         
-        if (castedCard.idString == idString) {
+        NSLog(@"inside loop %@ %@", castedCard.idString, idString);
+        if ([castedCard.idString isEqualToString:idString]) {
+            NSLog(@"logging click");
             [castedCard logCardClicked];
             break;
         }
