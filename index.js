@@ -391,6 +391,23 @@ var ReactAppboy = {
   getUnreadCardCountForCategories: function(category, callback) {
     callFunctionWithCallback(AppboyReactBridge.getUnreadCardCountForCategories, [category], callback);
   },
+  
+  getNewsFeedCards: function(callback) {
+    callFunctionWithCallback(AppboyReactBridge.getNewsFeedCards, [], callback);
+  },
+  
+  requestFeedRefresh: function() {
+    AppboyReactBridge.requestFeedRefresh();
+  },
+  
+  logCardImpression: function(idString) {
+    AppboyReactBridge.logCardImpression(idString);
+  },
+
+  logCardClicked: function(idString) {
+    AppboyReactBridge.logCardClicked(idString);
+  },
+
 
   // Feedback
   /**
