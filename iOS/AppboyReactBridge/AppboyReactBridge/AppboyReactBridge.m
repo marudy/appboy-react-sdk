@@ -255,7 +255,66 @@ RCT_EXPORT_METHOD(getUnreadCardCountForCategories:(NSString *)category callback:
 }
 
 RCT_EXPORT_METHOD(getNewsFeedCards:(RCTResponseSenderBlock)callback) {
+    id observer = [[NSNotificationCenter defaultCenter] addObserverForName:ABKFeedUpdatedNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+        BOOL updateIsSuccessful = [note.userInfo[ABKFeedUpdatedIsSuccessfulKey] boolValue];
+       
+        if (updateIsSuccessful) {
+            NSArray *cards = [[Appboy sharedInstance].feedController getNewsFeedCards];
+            [self reportResultWithCallback:callback andError:nil andResult:[self mapCardsToObjects:cards]];
+        }else {
+            [self reportResultWithCallback:callback andError:@"An error occurred retrieving the news feed cards" andResult:nil];
+        }
+        
+        [[NSNotificationCenter defaultCenter] removeObserver:observer];
+    }];
+    
+    [[Appboy sharedInstance] requestFeedRefresh];
+    //[self reportResultWithCallback:callback andError:nil andResult:[self mapCardsToObjects:cards]];
+}
+
+RCT_EXPORT_METHOD(requestFeedRefresh) {
+    [[Appboy sharedInstance] requestFeedRefresh];
+}
+
+RCT_EXPORT_METHOD(logCardImpression:(NSString *)idString) {
     NSArray *cards = [[Appboy sharedInstance].feedController getNewsFeedCards];
+    
+    for (id card in cards) {
+        ABKCard *castedCard = (ABKCard *)card;
+        
+        if (castedCard.idString == idString) {
+            [castedCard logCardImpression];
+            break;
+        }
+    }
+}
+
+RCT_EXPORT_METHOD(logCardClicked:(NSString *)idString) {
+    NSArray *cards = [[Appboy sharedInstance].feedController getNewsFeedCards];
+    
+    for (id card in cards) {
+        ABKCard *castedCard = (ABKCard *)card;
+        
+        if (castedCard.idString == idString) {
+            [castedCard logCardClicked];
+            break;
+        }
+    }
+}
+
+RCT_EXPORT_METHOD(launchFeedback) {
+  RCTLogInfo(@"launchFeedback called");
+  ABKFeedbackViewControllerModalContext *feedbackModal = [[ABKFeedbackViewControllerModalContext alloc] init];
+  UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+  UIViewController *mainViewController = keyWindow.rootViewController;
+  [mainViewController presentViewController:feedbackModal animated:YES completion:nil];
+}
+
+- (void)feedUpdatedNotificationReceived:(RCTResponseSenderBlock)callback {
+    
+}
+
+- (NSArray *)mapCardsToObjects:(NSArray *)cards {
     NSMutableArray *genericCards = [[NSMutableArray alloc] init];
     
     for (id card in cards) {
@@ -300,46 +359,7 @@ RCT_EXPORT_METHOD(getNewsFeedCards:(RCTResponseSenderBlock)callback) {
         }
     }
     
-    [self reportResultWithCallback:callback andError:nil andResult:[genericCards copy]];
-}
-
-RCT_EXPORT_METHOD(requestFeedRefresh) {
-    [[Appboy sharedInstance] requestFeedRefresh];
-}
-
-RCT_EXPORT_METHOD(logCardImpression:(NSString *)idString) {
-    NSArray *cards = [[Appboy sharedInstance].feedController getNewsFeedCards];
-    
-    for (id card in cards) {
-        ABKCard *castedCard = (ABKCard *)card;
-        
-        if (castedCard.idString == idString) {
-            [castedCard logCardImpression];
-            break;
-        }
-    }
-}
-
-RCT_EXPORT_METHOD(logCardClicked:(NSString *)idString) {
-    NSArray *cards = [[Appboy sharedInstance].feedController getNewsFeedCards];
-    
-    for (id card in cards) {
-        ABKCard *castedCard = (ABKCard *)card;
-        
-        if (castedCard.idString == idString) {
-            [castedCard logCardClicked];
-            break;
-        }
-    }
-}
-
-
-RCT_EXPORT_METHOD(launchFeedback) {
-  RCTLogInfo(@"launchFeedback called");
-  ABKFeedbackViewControllerModalContext *feedbackModal = [[ABKFeedbackViewControllerModalContext alloc] init];
-  UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
-  UIViewController *mainViewController = keyWindow.rootViewController;
-  [mainViewController presentViewController:feedbackModal animated:YES completion:nil];
+    return [genericCards copy];
 }
 
 RCT_EXPORT_MODULE();
