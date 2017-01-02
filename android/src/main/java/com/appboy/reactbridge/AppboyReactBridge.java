@@ -10,11 +10,17 @@ import com.appboy.enums.NotificationSubscriptionType;
 import com.appboy.enums.CardCategory;
 import com.appboy.events.FeedUpdatedEvent;
 import com.appboy.events.IEventSubscriber;
+import com.appboy.models.cards.BannerImageCard;
+import com.appboy.models.cards.CaptionedImageCard;
+import com.appboy.models.cards.Card;
+import com.appboy.models.cards.ShortNewsCard;
+import com.appboy.models.cards.TextAnnouncementCard;
 import com.appboy.models.outgoing.AppboyProperties;
 import com.appboy.models.outgoing.FacebookUser;
 import com.appboy.models.outgoing.TwitterUser;
 import com.appboy.support.AppboyLogger;
 import com.appboy.ui.activities.AppboyFeedActivity;
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -23,6 +29,8 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableMap;
 
 import org.json.JSONObject;
 
@@ -347,6 +355,53 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
     this.getReactApplicationContext().startActivity(intent);
   }
 
+  @ReactMethod
+  public void getNewsFeedCards(final Callback callback) {
+    final Appboy mAppboy = Appboy.getInstance(getReactApplicationContext());
+
+    IEventSubscriber<FeedUpdatedEvent> feedUpdatedSubscriber = new IEventSubscriber<FeedUpdatedEvent>() {
+      @Override
+      public void trigger(FeedUpdatedEvent feedUpdatedEvent) {
+        // Callback blocks (error or result) may only be invoked once, else React Native throws an error.
+        synchronized (mCallbackWasCalledMapLock) {
+          if (mCallbackWasCalledMap.get(callback) == null || mCallbackWasCalledMap.get(callback) != null && !mCallbackWasCalledMap.get(callback).booleanValue()) {
+            mCallbackWasCalledMap.put(callback, new Boolean(true));
+
+            List<Card> cards = feedUpdatedEvent.getFeedCards();
+            reportResultWithCallback(callback, null, mapCardsToObjects(cards));
+          }
+        }
+
+        // Remove this listener from the feed subscriber map and from Appboy
+        mAppboy.removeSingleSubscription(mFeedSubscriberMap.get(callback), FeedUpdatedEvent.class);
+        mFeedSubscriberMap.remove(callback);
+      }
+    };
+
+    // Put the subscriber into a map so we can remove it later from future subscriptions
+    mFeedSubscriberMap.put(callback, feedUpdatedSubscriber);
+    mAppboy.subscribeToFeedUpdates(feedUpdatedSubscriber);
+    mAppboy.requestFeedRefreshFromCache();
+  }
+
+  @ReactMethod
+  public void requestFeedRefresh() {
+    final Appboy mAppboy = Appboy.getInstance(getReactApplicationContext());
+    mAppboy.requestFeedRefreshFromCache();
+  }
+
+  @ReactMethod
+  public void logCardImpression(String cardId) {
+    final Appboy mAppboy = Appboy.getInstance(getReactApplicationContext());
+    mAppboy.logFeedCardImpression(cardId);
+  }
+
+  @ReactMethod
+  public void logCardClicked(String cardId) {
+    final Appboy mAppboy = Appboy.getInstance(getReactApplicationContext());
+    mAppboy.logFeedCardClick(cardId);
+  }
+
   private CardCategory getCardCategoryFromString(String categoryString) {
     CardCategory cardCategory = null;
     for (CardCategory category : CardCategory.values()) {
@@ -469,5 +524,55 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
       default:
         return null;
     }
+  }
+
+  private WritableArray mapCardsToObjects(List<Card> cards) {
+    WritableArray array = Arguments.createArray();
+
+    for (int i = 0; i < cards.size(); i++) {
+      WritableMap map = Arguments.createMap();
+      Card card = cards.get(i);
+      String url = card.getUrl();
+
+      map.putString("idString", card.getId());
+      map.putString("url", url != null ? url : "");
+
+      Map<String, String> extras = card.getExtras();
+      WritableMap extrasMap = Arguments.createMap();
+
+      for (Map.Entry<String, String> entry : extras.entrySet()) {
+        extrasMap.putString(entry.getKey(), entry.getValue());
+      }
+
+      map.putMap("extras", extrasMap);
+
+      if (card instanceof BannerImageCard) {
+        BannerImageCard castedCard = (BannerImageCard)card;
+        map.putString("image", castedCard.getImageUrl());
+        map.putString("type", "BannerCard");
+      }else if (card instanceof CaptionedImageCard) {
+        CaptionedImageCard castedCard = (CaptionedImageCard)card;
+        map.putString("image", castedCard.getImageUrl());
+        map.putDouble("imageAspectRatio", castedCard.getAspectRatio());
+        map.putString("title", castedCard.getTitle());
+        map.putString("description", castedCard.getDescription());
+        map.putString("type", "CaptionedImageCard");
+      }else if (card instanceof ShortNewsCard) {
+        ShortNewsCard castedCard = (ShortNewsCard)card;
+        map.putString("image", castedCard.getImageUrl());
+        map.putString("title", castedCard.getTitle());
+        map.putString("description", castedCard.getDescription());
+        map.putString("type", "ClassicCard");
+      }else if (card instanceof TextAnnouncementCard) {
+        TextAnnouncementCard castedCard = (TextAnnouncementCard)card;
+        map.putString("title", castedCard.getTitle());
+        map.putString("description", castedCard.getDescription());
+        map.putString("type", "TextAnnouncementCard");
+      }
+
+      array.pushMap(map);
+    }
+
+    return array;
   }
 }

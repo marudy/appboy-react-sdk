@@ -151,10 +151,9 @@ RCT_EXPORT_METHOD(setDoubleCustomUserAttribute:(NSString *)key andValue:(double)
   [self reportResultWithCallback:callback andError:nil andResult:@([[Appboy sharedInstance].user setCustomAttributeWithKey:key andDoubleValue:value])];
 }
 
-RCT_EXPORT_METHOD(setDateCustomUserAttribute:(NSString *)key andValue:(double)value callback:(RCTResponseSenderBlock)callback) {
+RCT_EXPORT_METHOD(setDateCustomUserAttribute:(NSString *)key andValue:(NSDate *)value callback:(RCTResponseSenderBlock)callback) {
   RCTLogInfo(@"[Appboy sharedInstance].user setCustomAttributeWithKey:AndDateValue: =  %@", key);
-  NSDate *date = [NSDate dateWithTimeIntervalSince1970:value];
-  [self reportResultWithCallback:callback andError:nil andResult:@([[Appboy sharedInstance].user setCustomAttributeWithKey:key andDateValue:date])];
+  [self reportResultWithCallback:callback andError:nil andResult:@([[Appboy sharedInstance].user setCustomAttributeWithKey:key andDateValue:value])];
 }
 
 RCT_EXPORT_METHOD(setIntCustomUserAttribute:(NSString *)key andValue:(int)value callback:(RCTResponseSenderBlock)callback) {
@@ -254,6 +253,86 @@ RCT_EXPORT_METHOD(getUnreadCardCountForCategories:(NSString *)category callback:
     [self reportResultWithCallback:callback andError:nil andResult:@([[Appboy sharedInstance].feedController unreadCardCountForCategories:cardCategory])];
   }
 }
+
+RCT_EXPORT_METHOD(getNewsFeedCards:(RCTResponseSenderBlock)callback) {
+    NSArray *cards = [[Appboy sharedInstance].feedController getNewsFeedCards];
+    NSMutableArray *genericCards = [[NSMutableArray alloc] init];
+    
+    for (id card in cards) {
+        if ([card isKindOfClass:[ABKCaptionedImageCard class]]) {
+            ABKCaptionedImageCard *castedCard = (ABKCaptionedImageCard *)card;
+            
+            [genericCards addObject:@{ @"image": castedCard.image,
+                                       @"imageAspectRatio": @(castedCard.imageAspectRatio),
+                                       @"title": castedCard.title,
+                                       @"description": castedCard.cardDescription,
+                                       @"url": castedCard.url != nil ? castedCard.url : @"",
+                                       @"extras": castedCard.extras,
+                                       @"type": @"CaptionedImageCard",
+                                       @"idString": castedCard.idString}];
+        }else if ([card isKindOfClass:[ABKClassicCard class]]) {
+            ABKClassicCard *castedCard = (ABKClassicCard *)card;
+            
+            [genericCards addObject:@{ @"image": castedCard.image,
+                                       @"title": castedCard.title,
+                                       @"description": castedCard.cardDescription,
+                                       @"url": castedCard.url != nil ? castedCard.url : @"",
+                                       @"extras": castedCard.extras,
+                                       @"type": @"ClassicCard",
+                                       @"idString": castedCard.idString }];
+        }else if ([card isKindOfClass:[ABKTextAnnouncementCard class]]) {
+            ABKTextAnnouncementCard *castedCard = (ABKTextAnnouncementCard *)card;
+            
+            [genericCards addObject:@{ @"title": castedCard.title,
+                                       @"description": castedCard.cardDescription,
+                                       @"url": castedCard.url != nil ? castedCard.url : @"",
+                                       @"extras": castedCard.extras,
+                                       @"type": @"TextAnnouncementCard",
+                                       @"idString": castedCard.idString }];
+        }else if ([card isKindOfClass:[ABKBannerCard class]]) {
+            ABKBannerCard *castedCard = (ABKBannerCard *)card;
+            
+            [genericCards addObject:@{ @"image": castedCard.image,
+                                       @"url": castedCard.url != nil ? castedCard.url : @"",
+                                       @"extras": castedCard.extras,
+                                       @"type": @"BannerCard",
+                                       @"idString": castedCard.idString }];
+        }
+    }
+    
+    [self reportResultWithCallback:callback andError:nil andResult:[genericCards copy]];
+}
+
+RCT_EXPORT_METHOD(requestFeedRefresh) {
+    [[Appboy sharedInstance] requestFeedRefresh];
+}
+
+RCT_EXPORT_METHOD(logCardImpression:(NSString *)idString) {
+    NSArray *cards = [[Appboy sharedInstance].feedController getNewsFeedCards];
+    
+    for (id card in cards) {
+        ABKCard *castedCard = (ABKCard *)card;
+        
+        if (castedCard.idString == idString) {
+            [castedCard logCardImpression];
+            break;
+        }
+    }
+}
+
+RCT_EXPORT_METHOD(logCardClicked:(NSString *)idString) {
+    NSArray *cards = [[Appboy sharedInstance].feedController getNewsFeedCards];
+    
+    for (id card in cards) {
+        ABKCard *castedCard = (ABKCard *)card;
+        
+        if (castedCard.idString == idString) {
+            [castedCard logCardClicked];
+            break;
+        }
+    }
+}
+
 
 RCT_EXPORT_METHOD(launchFeedback) {
   RCTLogInfo(@"launchFeedback called");
