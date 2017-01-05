@@ -293,10 +293,7 @@ RCT_EXPORT_METHOD(logCardClicked:(NSString *)idString) {
     
     for (id card in cards) {
         ABKCard *castedCard = (ABKCard *)card;
-        
-        NSLog(@"inside loop %@ %@", castedCard.idString, idString);
         if ([castedCard.idString isEqualToString:idString]) {
-            NSLog(@"logging click");
             [castedCard logCardClicked];
             break;
         }
@@ -329,7 +326,9 @@ RCT_EXPORT_METHOD(launchFeedback) {
                                        @"url": castedCard.url != nil ? castedCard.url : @"",
                                        @"extras": castedCard.extras,
                                        @"type": @"CaptionedImageCard",
-                                       @"idString": castedCard.idString}];
+                                       @"idString": castedCard.idString,
+                                       @"created": @(castedCard.created),
+                                       @"updated": @(castedCard.updated)}];
         }else if ([card isKindOfClass:[ABKClassicCard class]]) {
             ABKClassicCard *castedCard = (ABKClassicCard *)card;
             
@@ -339,7 +338,9 @@ RCT_EXPORT_METHOD(launchFeedback) {
                                        @"url": castedCard.url != nil ? castedCard.url : @"",
                                        @"extras": castedCard.extras,
                                        @"type": @"ClassicCard",
-                                       @"idString": castedCard.idString }];
+                                       @"idString": castedCard.idString,
+                                       @"created": @(castedCard.created),
+                                       @"updated": @(castedCard.updated) }];
         }else if ([card isKindOfClass:[ABKTextAnnouncementCard class]]) {
             ABKTextAnnouncementCard *castedCard = (ABKTextAnnouncementCard *)card;
             
@@ -348,7 +349,9 @@ RCT_EXPORT_METHOD(launchFeedback) {
                                        @"url": castedCard.url != nil ? castedCard.url : @"",
                                        @"extras": castedCard.extras,
                                        @"type": @"TextAnnouncementCard",
-                                       @"idString": castedCard.idString }];
+                                       @"idString": castedCard.idString,
+                                       @"created": @(castedCard.created),
+                                       @"updated": @(castedCard.updated) }];
         }else if ([card isKindOfClass:[ABKBannerCard class]]) {
             ABKBannerCard *castedCard = (ABKBannerCard *)card;
             
@@ -356,7 +359,9 @@ RCT_EXPORT_METHOD(launchFeedback) {
                                        @"url": castedCard.url != nil ? castedCard.url : @"",
                                        @"extras": castedCard.extras,
                                        @"type": @"BannerCard",
-                                       @"idString": castedCard.idString }];
+                                       @"idString": castedCard.idString,
+                                       @"created": @(castedCard.created),
+                                       @"updated": @(castedCard.updated) }];
         }
     }
     

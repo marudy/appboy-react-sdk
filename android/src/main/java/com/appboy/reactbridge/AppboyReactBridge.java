@@ -381,13 +381,13 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
     // Put the subscriber into a map so we can remove it later from future subscriptions
     mFeedSubscriberMap.put(callback, feedUpdatedSubscriber);
     mAppboy.subscribeToFeedUpdates(feedUpdatedSubscriber);
-    mAppboy.requestFeedRefreshFromCache();
+    mAppboy.requestFeedRefresh();
   }
 
   @ReactMethod
   public void requestFeedRefresh() {
     final Appboy mAppboy = Appboy.getInstance(getReactApplicationContext());
-    mAppboy.requestFeedRefreshFromCache();
+    mAppboy.requestFeedRefresh();
   }
 
   @ReactMethod
@@ -535,6 +535,8 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
       String url = card.getUrl();
 
       map.putString("idString", card.getId());
+      map.putInt("updated", (int)card.getUpdated());
+      map.putInt("created", (int)card.getCreated());
       map.putString("url", url != null ? url : "");
 
       Map<String, String> extras = card.getExtras();
