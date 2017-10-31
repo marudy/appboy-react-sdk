@@ -75,10 +75,26 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
       AppboyLogger.w(TAG, "Warning: AppboyReactBridge callback was null.");
     }
   }
+  
+  @ReactMethod
+  public void setSDKFlavor() {
+    // Dummy method required for the iOS SDK flavor implementation; see AppboyReactBridge.setSDKFlavor()
+    // in index.js. The Android bridge sets the REACT SDK flavor via an appboy.xml parameter.
+  }
+    
+  @ReactMethod
+  public void requestImmediateDataFlush() {
+    Appboy.getInstance(getReactApplicationContext()).requestImmediateDataFlush();
+  }
 
   @ReactMethod
   public void changeUser(String userName) {
     Appboy.getInstance(getReactApplicationContext()).changeUser(userName);
+  }
+  
+  @ReactMethod
+  public void registerPushToken(String token) {
+    Appboy.getInstance(getReactApplicationContext()).registerAppboyPushMessages(token);
   }
 
   @ReactMethod
@@ -349,7 +365,7 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void launchNewsFeed() {
+  public void launchNewsFeed(ReadableMap launchOptions) {
     Intent intent = new Intent(getCurrentActivity(), AppboyFeedActivity.class);
     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
     this.getReactApplicationContext().startActivity(intent);
@@ -385,12 +401,6 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void requestFeedRefresh() {
-    final Appboy mAppboy = Appboy.getInstance(getReactApplicationContext());
-    mAppboy.requestFeedRefresh();
-  }
-
-  @ReactMethod
   public void logCardImpression(String cardId) {
     final Appboy mAppboy = Appboy.getInstance(getReactApplicationContext());
     mAppboy.logFeedCardImpression(cardId);
@@ -400,6 +410,11 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
   public void logCardClicked(String cardId) {
     final Appboy mAppboy = Appboy.getInstance(getReactApplicationContext());
     mAppboy.logFeedCardClick(cardId);
+  }
+
+  @ReactMethod
+  public void requestFeedRefresh() {
+    Appboy.getInstance(getReactApplicationContext()).requestFeedRefresh();
   }
 
   private CardCategory getCardCategoryFromString(String categoryString) {

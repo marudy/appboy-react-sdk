@@ -1,4 +1,5 @@
 const AppboyReactBridge = require('react-native').NativeModules.AppboyReactBridge;
+AppboyReactBridge.setSDKFlavor();
 
 /**
 * This default callback logs errors and null or false results. AppboyReactBridge methods with callbacks will
@@ -91,6 +92,15 @@ var ReactAppboy = {
   */
   changeUser: function(userId) {
     AppboyReactBridge.changeUser(userId);
+  },
+
+  /**
+  * This method posts a token to Appboy's servers to associate the token with the current device.
+  *
+  * @param {string} token - The device's push token.
+  */
+  registerPushToken: function(token) {
+    AppboyReactBridge.registerPushToken(token);
   },
 
   /**
@@ -365,9 +375,17 @@ var ReactAppboy = {
   // News Feed
   /**
   * Launches the News Feed UI element.
+  * @param {object} launchOptions - An optional dictionary of News Feed launch options. See NewsFeedLaunchOptions for supported keys.
   */
-  launchNewsFeed: function() {
-    AppboyReactBridge.launchNewsFeed();
+  launchNewsFeed: function(launchOptions) {
+    AppboyReactBridge.launchNewsFeed(launchOptions);
+  },
+
+  /**
+   * Requests a News Feed refresh.
+   */
+  requestFeedRefresh: function() {
+    AppboyReactBridge.requestFeedRefresh();
   },
 
   /**
@@ -417,6 +435,14 @@ var ReactAppboy = {
     AppboyReactBridge.launchFeedback();
   },
 
+  // Flush Controls
+  /**
+  * Requests an immediate flush of any data waiting to be sent to Appboy's servers.
+  */
+  requestImmediateDataFlush: function() {
+    AppboyReactBridge.requestImmediateDataFlush();
+  },
+
   // Enums
   CardCategory: {
     'ADVERTISING': 'advertising',
@@ -436,6 +462,13 @@ var ReactAppboy = {
   Genders: {
     'MALE': 'm',
     'FEMALE': 'f'
+  },
+
+  NewsFeedLaunchOptions: {
+    'CARD_WIDTH_FOR_IPHONE': 'cardWidthForiPhone',
+    'CARD_WIDTH_FOR_IPAD': 'cardWidthForiPad',
+    'MINIMUM_CARD_MARGIN_FOR_IPHONE': 'minimumCardMarginForiPhone',
+    'MINIMUM_CARD_MARGIN_FOR_IPAD': 'minimumCardMarginForiPad'
   }
 };
 

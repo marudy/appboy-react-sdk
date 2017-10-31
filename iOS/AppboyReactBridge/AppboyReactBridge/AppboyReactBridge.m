@@ -4,6 +4,7 @@
 #import "AppboyKit.h"
 #import "ABKUser.h"
 #import "AppboyReactUtils.h"
+#import "ABKModalFeedbackViewController.h"
 
 @implementation RCTConvert (AppboySubscriptionType)
 RCT_ENUM_CONVERTER(ABKNotificationSubscriptionType,
@@ -37,6 +38,10 @@ RCT_ENUM_CONVERTER(ABKNotificationSubscriptionType,
   }
 }
 
+RCT_EXPORT_METHOD(setSDKFlavor) {
+  [Appboy sharedInstance].sdkFlavor = REACT;
+}
+
 // Returns the deep link from the push dictionary in application:didFinishLaunchingWithOptions: launchOptions, if one exists
 // For more context see getInitialURL() in index.js
 RCT_EXPORT_METHOD(getInitialUrl:(RCTResponseSenderBlock)callback) {
@@ -51,6 +56,12 @@ RCT_EXPORT_METHOD(changeUser:(NSString *)userId)
 {
   RCTLogInfo(@"[Appboy sharedInstance] changeUser with value %@", userId);
   [[Appboy sharedInstance] changeUser:userId];
+}
+
+RCT_EXPORT_METHOD(registerPushToken:(NSString *)token)
+{
+  RCTLogInfo(@"[Appboy sharedInstance] registerPushToken with value %@", token);
+  [[Appboy sharedInstance] registerPushToken:token];
 }
 
 RCT_EXPORT_METHOD(submitFeedback:(NSString *)replyToEmail message:(NSString *)message isReportingABug:(BOOL)isReportingABug callback:(RCTResponseSenderBlock)callback)
@@ -209,11 +220,29 @@ RCT_EXPORT_METHOD(setFacebookData:(nullable NSDictionary *)facebookUserDictionar
     [Appboy sharedInstance].user.facebookUser = facebookUser;
 }
 
-RCT_EXPORT_METHOD(launchNewsFeed) {
+RCT_EXPORT_METHOD(launchNewsFeed:(nullable NSDictionary *)launchOptions) {
   RCTLogInfo(@"launchNewsFeed called");
   ABKFeedViewControllerModalContext *feedModal = [[ABKFeedViewControllerModalContext alloc] init];
   feedModal.navigationItem.title = @"News";
   // TODO, revisit how to get view controller
+  if (launchOptions) {
+    NSNumber * minimumCardMarginForiPhone = launchOptions[@"minimumCardMarginForiPhone"];
+    if (minimumCardMarginForiPhone && [minimumCardMarginForiPhone isKindOfClass:[NSNumber class]]) {
+      feedModal.minimumCardMarginForiPhone = minimumCardMarginForiPhone.floatValue;
+    }
+    NSNumber * minimumCardMarginForiPad = launchOptions[@"minimumCardMarginForiPad"];
+    if (minimumCardMarginForiPad && [minimumCardMarginForiPad isKindOfClass:[NSNumber class]]) {
+      feedModal.minimumCardMarginForiPad = minimumCardMarginForiPad.floatValue;
+    }
+    NSNumber * cardWidthForiPhone = launchOptions[@"cardWidthForiPhone"];
+    if (cardWidthForiPhone && [cardWidthForiPhone isKindOfClass:[NSNumber class]]) {
+      feedModal.cardWidthForiPhone = cardWidthForiPhone.floatValue;
+    }
+    NSNumber * cardWidthForiPad = launchOptions[@"cardWidthForiPad"];
+    if (cardWidthForiPad && [cardWidthForiPad isKindOfClass:[NSNumber class]]) {
+      feedModal.cardWidthForiPad = cardWidthForiPad.floatValue;
+    }
+  }
   UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
   UIViewController *mainViewController = keyWindow.rootViewController;
   [mainViewController presentViewController:feedModal animated:YES completion:nil];
@@ -237,6 +266,10 @@ RCT_EXPORT_METHOD(launchNewsFeed) {
   return cardCategory;
 }
 
+RCT_EXPORT_METHOD(requestFeedRefresh) {
+  [[Appboy sharedInstance] requestFeedRefresh];
+}
+  
 RCT_EXPORT_METHOD(getCardCountForCategories:(NSString *)category callback:(RCTResponseSenderBlock)callback) {
   ABKCardCategory cardCategory = [self getCardCategoryForString:category];
   if (cardCategory == 0) {
@@ -302,7 +335,7 @@ RCT_EXPORT_METHOD(logCardClicked:(NSString *)idString) {
 
 RCT_EXPORT_METHOD(launchFeedback) {
   RCTLogInfo(@"launchFeedback called");
-  ABKFeedbackViewControllerModalContext *feedbackModal = [[ABKFeedbackViewControllerModalContext alloc] init];
+  ABKModalFeedbackViewController *feedbackModal = [[ABKModalFeedbackViewController alloc] init];
   UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
   UIViewController *mainViewController = keyWindow.rootViewController;
   [mainViewController presentViewController:feedbackModal animated:YES completion:nil];
@@ -364,8 +397,12 @@ RCT_EXPORT_METHOD(launchFeedback) {
                                        @"updated": @(castedCard.updated) }];
         }
     }
-    
     return [genericCards copy];
+}
+    
+RCT_EXPORT_METHOD(requestImmediateDataFlush) {
+  RCTLogInfo(@"requestImmediateDataFlush called");
+  [[Appboy sharedInstance] flushDataAndProcessRequestQueue];
 }
 
 RCT_EXPORT_MODULE();

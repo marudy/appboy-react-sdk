@@ -1,7 +1,43 @@
+## 1.4.0
+
+##### Breaking
+- Updates the native iOS bridge to use [Appboy iOS SDK 2.31.0](https://github.com/Appboy/appboy-ios-sdk/releases/tag/2.31.0) or later.
+- Updates the native Android bridge to use [Appboy Android SDK 2.1.4](https://github.com/Appboy/appboy-android-sdk/blob/master/CHANGELOG.md#214).
+
+##### Added
+
+- Adds `ReactAppboy.registerPushToken()` for registering push tokens with Appboy.
+  - See https://github.com/Appboy/appboy-react-sdk/pull/13. Thanks @dcvz!
+- Adds the local `react-native-appboy-sdk` Podspec for integrating the React Native iOS bridge via Cocoapods.
+  - See the new `HelloReact` sample app for an integration example.
+  - See https://github.com/Appboy/appboy-react-sdk/pull/15. Thanks @pietropizzi!
+
+## 1.3.0
+
+##### Breaking
+- Updates the native iOS bridge to use [Appboy iOS SDK 2.29.0](https://github.com/Appboy/appboy-ios-sdk/blob/master/CHANGELOG.md#2290), which drops support for iOS 7.
+- Updates the native Android bridge to use [Appboy Android SDK 2.0.0](https://github.com/Appboy/appboy-android-sdk/blob/master/CHANGELOG.md#200).
+
+##### Added
+- Adds `ReactAppboy.requestImmediateDataFlush()` for requesting an immediate flush of any data waiting to be sent to Appboy's servers.
+- Adds `ReactAppboy.requestFeedRefresh()` for requesting a refresh of the News Feed.
+  - See https://github.com/Appboy/appboy-react-sdk/pull/12. Thanks @stief510!
+- Added the ability to pass an optional dictionary of News Feed launch options to `launchNewsFeed()`. See `NewsFeedLaunchOptions` for supported keys.
+  - For more information on currently supported `NewsFeedLaunchOptions` keys, see the card width and card margin properties on [ABKFeedViewController](http://appboy.github.io/appboy-ios-sdk/docs/interface_a_b_k_feed_view_controller.html).
+  - See https://github.com/Appboy/appboy-react-sdk/pull/10. Thanks @mihalychk!
+
+## 1.2.0
+
+##### Breaking
+- Updates the native iOS bridge to be compatible with React Native [v0.40.0](https://github.com/facebook/react-native/releases/tag/v0.40.0).
+
+##### Changed
+- Updates the AppboyProject sample project to React Native v0.41.1.
+
 ## 1.1.0
 
 ##### Breaking
-- **Update Required** — Fixes a bug in the [iOS bridge](https://github.com/Appboy/appboy-react-sdk/blob/master/iOS/AppboyReactBridge/AppboyReactBridge/AppboyReactBridge.m) where custom attribute dates were converted incorrectly, causing incorrect date data to be sent to Appboy. As a result of the fix, `setDateCustomUserAttribute()` in the iOS Appboy React bridge may now only be called with a double. 
+- **Update Required** — Fixes a bug in the [iOS bridge](https://github.com/Appboy/appboy-react-sdk/blob/master/iOS/AppboyReactBridge/AppboyReactBridge/AppboyReactBridge.m) where custom attribute dates were converted incorrectly, causing incorrect date data to be sent to Appboy. As a result of the fix, `setDateCustomUserAttribute()` in the iOS Appboy React bridge may now only be called with a double.
   - Note: The default Javascript Appboy interface has not changed, so for most integrations this just requires updating the SDK, unless you were manually calling our iOS bridge outside of our recommended integration.
   - See https://github.com/Appboy/appboy-react-sdk/issues/7
 
