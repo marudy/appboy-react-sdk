@@ -37,6 +37,7 @@ import org.json.JSONObject;
 import java.lang.Integer;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,9 +48,12 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
   private static final String UNREAD_CARD_COUNT_TAG = "unread card count";
   private static final String DURATION_SHORT_KEY = "SHORT";
   private static final String DURATION_LONG_KEY = "LONG";
+
   private final Object mCallbackWasCalledMapLock = new Object();
   private Map<Callback, IEventSubscriber<FeedUpdatedEvent>> mFeedSubscriberMap = new ConcurrentHashMap<Callback, IEventSubscriber<FeedUpdatedEvent>>();
   private Map<Callback, Boolean> mCallbackWasCalledMap = new ConcurrentHashMap<Callback, Boolean>();
+
+  private Map<String, Card> mFeedCards = new HashMap<>();
 
   public AppboyReactBridge(ReactApplicationContext reactContext) {
     super(reactContext);
@@ -384,6 +388,11 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
             mCallbackWasCalledMap.put(callback, new Boolean(true));
 
             List<Card> cards = feedUpdatedEvent.getFeedCards();
+
+            // Keep reference to each card by ID, so we can log impressions / clicks
+            mFeedCards = new HashMap<>();
+            for (Card card : cards) mFeedCards.put(card.getId(), card);
+
             reportResultWithCallback(callback, null, mapCardsToObjects(cards));
           }
         }
@@ -402,14 +411,14 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void logCardImpression(String cardId) {
-    final Appboy mAppboy = Appboy.getInstance(getReactApplicationContext());
-    mAppboy.logFeedCardImpression(cardId);
+    Card card = mFeedCards.get(cardId);
+    if (card != null) card.logImpression();
   }
 
   @ReactMethod
   public void logCardClicked(String cardId) {
-    final Appboy mAppboy = Appboy.getInstance(getReactApplicationContext());
-    mAppboy.logFeedCardClick(cardId);
+    Card card = mFeedCards.get(cardId);
+    if (card != null) card.logClick();
   }
 
   @ReactMethod
