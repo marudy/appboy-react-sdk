@@ -352,7 +352,7 @@ RCT_EXPORT_METHOD(launchFeedback) {
                                        @"imageAspectRatio": @(castedCard.imageAspectRatio),
                                        @"title": castedCard.title,
                                        @"description": castedCard.cardDescription,
-                                       @"url": castedCard.url != nil ? castedCard.url : @"",
+                                       @"url": castedCard.urlString != nil ? castedCard.urlString : @"",
                                        @"extras": castedCard.extras,
                                        @"type": @"CaptionedImageCard",
                                        @"idString": castedCard.idString,
@@ -364,7 +364,7 @@ RCT_EXPORT_METHOD(launchFeedback) {
             [genericCards addObject:@{ @"image": castedCard.image,
                                        @"title": castedCard.title,
                                        @"description": castedCard.cardDescription,
-                                       @"url": castedCard.url != nil ? castedCard.url : @"",
+                                       @"url": castedCard.urlString != nil ? castedCard.urlString : @"",
                                        @"extras": castedCard.extras,
                                        @"type": @"ClassicCard",
                                        @"idString": castedCard.idString,
@@ -375,7 +375,7 @@ RCT_EXPORT_METHOD(launchFeedback) {
             
             [genericCards addObject:@{ @"title": castedCard.title,
                                        @"description": castedCard.cardDescription,
-                                       @"url": castedCard.url != nil ? castedCard.url : @"",
+                                       @"url": castedCard.urlString != nil ? castedCard.urlString : @"",
                                        @"extras": castedCard.extras,
                                        @"type": @"TextAnnouncementCard",
                                        @"idString": castedCard.idString,
@@ -385,7 +385,7 @@ RCT_EXPORT_METHOD(launchFeedback) {
             ABKBannerCard *castedCard = (ABKBannerCard *)card;
             
             [genericCards addObject:@{ @"image": castedCard.image,
-                                       @"url": castedCard.url != nil ? castedCard.url : @"",
+                                       @"url": castedCard.urlString != nil ? castedCard.urlString : @"",
                                        @"extras": castedCard.extras,
                                        @"type": @"BannerCard",
                                        @"idString": castedCard.idString,
