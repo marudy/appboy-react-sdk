@@ -305,10 +305,6 @@ RCT_EXPORT_METHOD(getNewsFeedCards:(RCTResponseSenderBlock)callback) {
     [[Appboy sharedInstance] requestFeedRefresh];
 }
 
-RCT_EXPORT_METHOD(requestFeedRefresh) {
-    [[Appboy sharedInstance] requestFeedRefresh];
-}
-
 RCT_EXPORT_METHOD(logCardImpression:(NSString *)idString) {
     NSArray *cards = [[Appboy sharedInstance].feedController getNewsFeedCards];
     
