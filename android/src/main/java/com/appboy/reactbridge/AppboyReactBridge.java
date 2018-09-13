@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.appboy.Appboy;
+import com.appboy.services.AppboyLocationService;
 import com.appboy.enums.Gender;
 import com.appboy.enums.Month;
 import com.appboy.enums.NotificationSubscriptionType;
@@ -79,13 +80,13 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
       AppboyLogger.w(TAG, "Warning: AppboyReactBridge callback was null.");
     }
   }
-  
+
   @ReactMethod
   public void setSDKFlavor() {
     // Dummy method required for the iOS SDK flavor implementation; see AppboyReactBridge.setSDKFlavor()
     // in index.js. The Android bridge sets the REACT SDK flavor via an appboy.xml parameter.
   }
-    
+
   @ReactMethod
   public void requestImmediateDataFlush() {
     Appboy.getInstance(getReactApplicationContext()).requestImmediateDataFlush();
@@ -95,7 +96,7 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
   public void changeUser(String userName) {
     Appboy.getInstance(getReactApplicationContext()).changeUser(userName);
   }
-  
+
   @ReactMethod
   public void registerPushToken(String token) {
     Appboy.getInstance(getReactApplicationContext()).registerAppboyPushMessages(token);
@@ -142,8 +143,9 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void submitFeedback(String replyToEmail, String message, boolean isReportingABug, Callback callback) {
-    boolean result = Appboy.getInstance(getReactApplicationContext()).submitFeedback(replyToEmail, message, isReportingABug);
-    reportResultWithCallback(callback, null, result);
+    Appboy.getInstance(getReactApplicationContext()).submitFeedback(replyToEmail, message, isReportingABug);
+    // Always return true as Android doesn't support getting a result from submitFeedback().
+    reportResultWithCallback(callback, null, true);
   }
 
   @ReactMethod
@@ -232,10 +234,18 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
     if (gender == null) {
       reportResultWithCallback(callback, "Input Gender was null. Gender not set.", null);
       return;
-    } else if (gender.toUpperCase().startsWith("M")) {
-      genderEnum = Gender.MALE;
     } else if (gender.toUpperCase().startsWith("F")) {
       genderEnum = Gender.FEMALE;
+    } else if (gender.toUpperCase().startsWith("M")) {
+      genderEnum = Gender.MALE;
+    } else if (gender.toUpperCase().startsWith("N")) {
+      genderEnum = Gender.NOT_APPLICABLE;
+    } else if (gender.toUpperCase().startsWith("O")) {
+      genderEnum = Gender.OTHER;
+    } else if (gender.toUpperCase().startsWith("P")) {
+      genderEnum = Gender.PREFER_NOT_TO_SAY;
+    } else if (gender.toUpperCase().startsWith("U")) {
+      genderEnum = Gender.UNKNOWN;
     } else {
       reportResultWithCallback(callback, "Invalid input " + gender + ". Gender not set.", null);
       return;
@@ -369,7 +379,7 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void launchNewsFeed(ReadableMap launchOptions) {
+  public void launchNewsFeed() {
     Intent intent = new Intent(getCurrentActivity(), AppboyFeedActivity.class);
     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
     this.getReactApplicationContext().startActivity(intent);
@@ -448,7 +458,6 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
     // Register FeedUpdatedEvent subscriber
     IEventSubscriber<FeedUpdatedEvent> feedUpdatedSubscriber = null;
     boolean requestingFeedUpdateFromCache = false;
-    final Appboy mAppboy = Appboy.getInstance(getReactApplicationContext());
 
     if (cardCountTag.equals(CARD_COUNT_TAG)) {
       // getCardCount
@@ -467,7 +476,7 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
             }
           }
           // Remove this listener from the feed subscriber map and from Appboy
-          mAppboy.removeSingleSubscription(mFeedSubscriberMap.get(callback), FeedUpdatedEvent.class);
+          Appboy.getInstance(getReactApplicationContext()).removeSingleSubscription(mFeedSubscriberMap.get(callback), FeedUpdatedEvent.class);
           mFeedSubscriberMap.remove(callback);
         }
       };
@@ -489,7 +498,7 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
             }
           }
           // Remove this listener from the feed subscriber map and from Appboy
-          mAppboy.removeSingleSubscription(mFeedSubscriberMap.get(callback), FeedUpdatedEvent.class);
+          Appboy.getInstance(getReactApplicationContext()).removeSingleSubscription(mFeedSubscriberMap.get(callback), FeedUpdatedEvent.class);
           mFeedSubscriberMap.remove(callback);
         }
       };
@@ -499,8 +508,8 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
     if (requestingFeedUpdateFromCache) {
       // Put the subscriber into a map so we can remove it later from future subscriptions
       mFeedSubscriberMap.put(callback, feedUpdatedSubscriber);
-      mAppboy.subscribeToFeedUpdates(feedUpdatedSubscriber);
-      mAppboy.requestFeedRefreshFromCache();
+      Appboy.getInstance(getReactApplicationContext()).subscribeToFeedUpdates(feedUpdatedSubscriber);
+      Appboy.getInstance(getReactApplicationContext()).requestFeedRefreshFromCache();
     }
   }
 
@@ -517,6 +526,33 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
   @ReactMethod
   public void launchFeedback() {
     Log.i(TAG, "Launch feedback actions are not currently supported on Android. Doing nothing.");
+  }
+
+  @ReactMethod
+  public void wipeData() {
+    Appboy.wipeData(getReactApplicationContext());
+  }
+
+  @ReactMethod
+  public void disableSDK() {
+    Appboy.disableSdk(getReactApplicationContext());
+  }
+
+  @ReactMethod
+  public void enableSDK() {
+    Appboy.enableSdk(getReactApplicationContext());
+  }
+
+  @ReactMethod
+  public void requestLocationInitialization() {
+    AppboyLocationService.requestInitialization(getReactApplicationContext());
+  }
+
+  @ReactMethod
+  public void setLocationCustomAttribute(String key, Double latitude, Double longitude, Callback callback) {
+    Appboy.getInstance(getReactApplicationContext()).getCurrentUser().setLocationCustomAttribute(key, latitude, longitude);
+    // Always return true as Android doesn't support getting a result from setLocationCustomAttribute().
+    reportResultWithCallback(callback, null, true);
   }
 
   private Month parseMonth(int monthInt) {
