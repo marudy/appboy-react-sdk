@@ -40,7 +40,7 @@ var ReactAppboy = {
   * If an application is launched from a push notification click, we return any Appboy deep links in the push payload.
   * @param {function(string)} callback - A callback that retuns the deep link as a string. If there is no deep link, returns null.
   */
-  getInitialURL: function(callback) {
+  getInitialURL: function (callback) {
     if (AppboyReactBridge.getInitialUrl) {
       AppboyReactBridge.getInitialUrl((err, res) => {
         if (err) {
@@ -89,7 +89,7 @@ var ReactAppboy = {
   *
   * @param {string} userId - A unique identifier for this user.
   */
-  changeUser: function(userId) {
+  changeUser: function (userId) {
     AppboyReactBridge.setSDKFlavor();
     AppboyReactBridge.changeUser(userId);
   },
@@ -99,7 +99,7 @@ var ReactAppboy = {
   *
   * @param {string} token - The device's push token.
   */
-  registerPushToken: function(token) {
+  registerPushToken: function (token) {
     AppboyReactBridge.registerPushToken(token);
   },
 
@@ -113,7 +113,7 @@ var ReactAppboy = {
   *      characters in length, cannot begin with a $, and can only contain alphanumeric characters and punctuation.
   *      Values can be numeric, boolean, or strings 255 characters or shorter.
   */
-  logCustomEvent: function(eventName, eventProperties) {
+  logCustomEvent: function (eventName, eventProperties) {
     AppboyReactBridge.setSDKFlavor();
     AppboyReactBridge.logCustomEvent(eventName, eventProperties);
   },
@@ -142,7 +142,7 @@ var ReactAppboy = {
   *      characters in length, cannot begin with a $, and can only contain alphanumeric characters and punctuation.
   *      Values can be numeric, boolean, or strings 255 characters or shorter.
   */
-  logPurchase: function(productId, price, currencyCode, quantity, purchaseProperties) {
+  logPurchase: function (productId, price, currencyCode, quantity, purchaseProperties) {
     AppboyReactBridge.logPurchase(productId, price, currencyCode, quantity, purchaseProperties);
   },
 
@@ -153,7 +153,7 @@ var ReactAppboy = {
   * @param {boolean} isBug - If the feedback is reporting a bug or not.
   * @param {function(error, result)} callback - A callback that receives the function call result.
   */
-  submitFeedback: function(email, feedback, isBug, callback) {
+  submitFeedback: function (email, feedback, isBug, callback) {
     callFunctionWithCallback(AppboyReactBridge.submitFeedback, [email, feedback, isBug], callback);
   },
 
@@ -168,7 +168,7 @@ var ReactAppboy = {
   *    Passing a null value will remove this custom attribute from the user.
   * @param {function(error, result)} callback - A callback that receives the function call result.
   */
-  setCustomUserAttribute: function(key, value, callback) {
+  setCustomUserAttribute: function (key, value, callback) {
     var valueType = typeof (value);
     if (value instanceof Date) {
       callFunctionWithCallback(AppboyReactBridge.setDateCustomUserAttribute, [key, Math.floor(value.getTime() / 1000)], callback);
@@ -197,7 +197,7 @@ var ReactAppboy = {
   * @param {integer} value - May be negative to decrement.
   * @param {function(error, result)} callback - A callback that receives the function call result.
   */
-  incrementCustomUserAttribute: function(key, value, callback) {
+  incrementCustomUserAttribute: function (key, value, callback) {
     callFunctionWithCallback(AppboyReactBridge.incrementCustomUserAttribute, [key, value], callback);
   },
 
@@ -205,7 +205,7 @@ var ReactAppboy = {
   * Sets the first name of the user.
   * @param {string} firstName - Limited to 255 characters in length.
   */
-  setFirstName: function(firstName) {
+  setFirstName: function (firstName) {
     AppboyReactBridge.setFirstName(firstName);
   },
 
@@ -213,7 +213,7 @@ var ReactAppboy = {
   * Sets the last name of the user.
   * @param {string} lastName - Limited to 255 characters in length.
   */
-  setLastName: function(lastName) {
+  setLastName: function (lastName) {
     AppboyReactBridge.setLastName(lastName);
   },
 
@@ -221,7 +221,7 @@ var ReactAppboy = {
   * Sets the email address of the user.
   * @param {string} email - Must pass RFC-5322 email address validation.
   */
-  setEmail: function(email) {
+  setEmail: function (email) {
     AppboyReactBridge.setEmail(email);
   },
 
@@ -230,7 +230,7 @@ var ReactAppboy = {
   * @param {Genders} gender - Options: f = female, m = male, n = N/A, o = other, p = prefer not to say, u = unknown
   * @param {function(error, result)} callback - A callback that receives the function call result.
   */
-  setGender: function(gender, callback) {
+  setGender: function (gender, callback) {
     callFunctionWithCallback(AppboyReactBridge.setGender, [gender], callback);
   },
 
@@ -238,7 +238,7 @@ var ReactAppboy = {
   * Sets the country for the user.
   * @param {string} country - Limited to 255 characters in length.
   */
-  setCountry: function(country) {
+  setCountry: function (country) {
     AppboyReactBridge.setCountry(country);
   },
 
@@ -246,7 +246,7 @@ var ReactAppboy = {
   * Sets the home city for the user.
   * @param {string} homeCity - Limited to 255 characters in length.
   */
-  setHomeCity: function(homeCity) {
+  setHomeCity: function (homeCity) {
     AppboyReactBridge.setHomeCity(homeCity);
   },
 
@@ -255,7 +255,7 @@ var ReactAppboy = {
   * @param {string} phoneNumber - A phone number is considered valid if it is no more than 255 characters in length and
   *    contains only numbers, whitespace, and the following special characters +.-()
   */
-  setPhoneNumber: function(phoneNumber) {
+  setPhoneNumber: function (phoneNumber) {
     AppboyReactBridge.setPhoneNumber(phoneNumber);
   },
 
@@ -264,7 +264,7 @@ var ReactAppboy = {
   *    dashboard.
   * @param {string} avatarImageUrl
   */
-  setAvatarImageUrl: function(avatarImageUrl) {
+  setAvatarImageUrl: function (avatarImageUrl) {
     AppboyReactBridge.setAvatarImageUrl(avatarImageUrl);
   },
 
@@ -274,8 +274,16 @@ var ReactAppboy = {
   * @param {integer} month - 1-12
   * @param {integer} day
   */
-  setDateOfBirth: function(year, month, day) {
+  setDateOfBirth: function (year, month, day) {
     AppboyReactBridge.setDateOfBirth(year, month, day);
+  },
+
+  /**
+  * Sets the language of the user.
+  * @param {string} language - Limited to 255 characters in length.
+  */
+  setLanguage: function (language) {
+    AppboyReactBridge.setLanguage(language);
   },
 
   /**
@@ -284,7 +292,7 @@ var ReactAppboy = {
   *    opted-in, subscribed, or unsubscribed).
   * @param {function(error, result)} callback - A callback that receives the function call result.
   */
-  setPushNotificationSubscriptionType: function(notificationSubscriptionType, callback) {
+  setPushNotificationSubscriptionType: function (notificationSubscriptionType, callback) {
     callFunctionWithCallback(AppboyReactBridge.setPushNotificationSubscriptionType, [notificationSubscriptionType], callback);
   },
 
@@ -294,7 +302,7 @@ var ReactAppboy = {
   *    opted-in, subscribed, or unsubscribed).
   * @param {function(error, result)} callback - A callback that receives the function call result.
   */
-  setEmailNotificationSubscriptionType: function(notificationSubscriptionType, callback) {
+  setEmailNotificationSubscriptionType: function (notificationSubscriptionType, callback) {
     callFunctionWithCallback(AppboyReactBridge.setEmailNotificationSubscriptionType, [notificationSubscriptionType], callback);
   },
 
@@ -306,7 +314,7 @@ var ReactAppboy = {
   *    begin with a $, and can only contain alphanumeric characters and punctuation.
   * @param {function(error, result)} callback - A callback that receives the function call result.
   */
-  addToCustomUserAttributeArray: function(key, value, callback) {
+  addToCustomUserAttributeArray: function (key, value, callback) {
     callFunctionWithCallback(AppboyReactBridge.addToCustomAttributeArray, [key, value], callback);
   },
 
@@ -318,7 +326,7 @@ var ReactAppboy = {
   *    cannot beging with a $, and can only contain alphanumeric characters and punctuation.
   * @param {function(error, result)} callback - A callback that receives the function call result.
   */
-  removeFromCustomUserAttributeArray: function(key, value, callback) {
+  removeFromCustomUserAttributeArray: function (key, value, callback) {
     callFunctionWithCallback(AppboyReactBridge.removeFromCustomAttributeArray, [key, value], callback);
   },
 
@@ -328,7 +336,7 @@ var ReactAppboy = {
   *    a $, and can only contain alphanumeric characters and punctuation.
   * @param {function(error, result)} callback - A callback that receives the function call result.
   */
-  unsetCustomUserAttribute: function(key, callback) {
+  unsetCustomUserAttribute: function (key, callback) {
     callFunctionWithCallback(AppboyReactBridge.unsetCustomUserAttribute, [key], callback);
   },
 
@@ -344,7 +352,7 @@ var ReactAppboy = {
    * @param {integer} statusesCount - Number of Tweets by this user. May not be null.
    * @param {string} profileImageUrl - Link to profile image
    */
-  setTwitterData: function(id, screenName, name, description, followersCount, friendsCount, statusesCount, profileImageUrl) {
+  setTwitterData: function (id, screenName, name, description, followersCount, friendsCount, statusesCount, profileImageUrl) {
     if (id !== null && followersCount !== null && friendsCount !== null && statusesCount !== null) {
       AppboyReactBridge.setTwitterData(id, screenName, name, description, followersCount, friendsCount, statusesCount, profileImageUrl);
     } else {
@@ -365,7 +373,7 @@ var ReactAppboy = {
    * from facebook with facebook graph api endpoint "/me/likes", under the key "data"; Please refer to
    * https://developers.facebook.com/docs/graph-api/reference/v2.7/user/likes for more information.
    */
-  setFacebookData: function(facebookUserDictionary, numberOfFriends, likes) {
+  setFacebookData: function (facebookUserDictionary, numberOfFriends, likes) {
     if (numberOfFriends !== null) {
       AppboyReactBridge.setFacebookData(facebookUserDictionary, numberOfFriends, likes);
     } else {
@@ -377,14 +385,14 @@ var ReactAppboy = {
   /**
   * Launches the News Feed UI element.
   */
-  launchNewsFeed: function() {
+  launchNewsFeed: function () {
     AppboyReactBridge.launchNewsFeed();
   },
 
   /**
    * Requests a News Feed refresh.
    */
-  requestFeedRefresh: function() {
+  requestFeedRefresh: function () {
     AppboyReactBridge.requestFeedRefresh();
   },
 
@@ -395,7 +403,7 @@ var ReactAppboy = {
   * Note that for Android, a successful result relies on a FeedUpdatedEvent being posted at least once. There is also a slight
   * race condition around calling changeUser, which requests a feed refresh, so the counts may not always be accurate.
   */
-  getCardCountForCategories: function(category, callback) {
+  getCardCountForCategories: function (category, callback) {
     callFunctionWithCallback(AppboyReactBridge.getCardCountForCategories, [category], callback);
   },
 
@@ -406,23 +414,23 @@ var ReactAppboy = {
   * Note that for Android, a successful result relies on a FeedUpdatedEvent being posted at least once. There is also a slight
   * race condition around calling changeUser, which requests a feed refresh, so the counts may not always be accurate.
   */
-  getUnreadCardCountForCategories: function(category, callback) {
+  getUnreadCardCountForCategories: function (category, callback) {
     callFunctionWithCallback(AppboyReactBridge.getUnreadCardCountForCategories, [category], callback);
   },
-  
-  getNewsFeedCards: function(callback) {
+
+  getNewsFeedCards: function (callback) {
     callFunctionWithCallback(AppboyReactBridge.getNewsFeedCards, [], callback);
   },
-  
-  requestFeedRefresh: function() {
+
+  requestFeedRefresh: function () {
     AppboyReactBridge.requestFeedRefresh();
   },
-  
-  logCardImpression: function(idString) {
+
+  logCardImpression: function (idString) {
     AppboyReactBridge.logCardImpression(idString);
   },
 
-  logCardClicked: function(idString) {
+  logCardClicked: function (idString) {
     AppboyReactBridge.logCardClicked(idString);
   },
 
@@ -431,7 +439,7 @@ var ReactAppboy = {
   /**
   * Launches the Feedback UI element.  Not currently supported on Android.
   */
-  launchFeedback: function() {
+  launchFeedback: function () {
     AppboyReactBridge.launchFeedback();
   },
 
@@ -439,7 +447,7 @@ var ReactAppboy = {
   /**
   * Requests an immediate flush of any data waiting to be sent to Appboy's servers.
   */
-  requestImmediateDataFlush: function() {
+  requestImmediateDataFlush: function () {
     AppboyReactBridge.requestImmediateDataFlush();
   },
 
@@ -447,14 +455,14 @@ var ReactAppboy = {
   /**
   * Wipes Data on the Braze SDK. On iOS, the SDK will be disabled for the rest of the app run.
   */
-  wipeData: function() {
+  wipeData: function () {
     AppboyReactBridge.wipeData();
   },
 
   /**
   * Disables the Braze SDK immediately.
   */
-  disableSDK: function() {
+  disableSDK: function () {
     AppboyReactBridge.disableSDK();
   },
 
@@ -462,7 +470,7 @@ var ReactAppboy = {
   * Enables the Braze SDK after a previous call to disableSDK().
   * On iOS, the SDK will be enabled only after a subsequent call to startWithApiKey().
   */
-  enableSDK: function() {
+  enableSDK: function () {
     AppboyReactBridge.enableSDK();
   },
 
@@ -471,7 +479,7 @@ var ReactAppboy = {
   * to initialize Braze location features. Calling this method is a no-op on
   * iOS.
   */
-  requestLocationInitialization: function() {
+  requestLocationInitialization: function () {
     AppboyReactBridge.requestLocationInitialization();
   },
 
@@ -483,7 +491,7 @@ var ReactAppboy = {
   * @param {double} longitude - Location longitude.
   * @param {function(error, result)} callback - A callback that receives the function call result.
   */
-  setLocationCustomAttribute: function(key, latitude, longitude, callback) {
+  setLocationCustomAttribute: function (key, latitude, longitude, callback) {
     callFunctionWithCallback(AppboyReactBridge.setLocationCustomAttribute, [key, latitude, longitude], callback);
   },
 

@@ -151,6 +151,11 @@ RCT_EXPORT_METHOD(setAvatarImageUrl:(NSString *)avatarImageURL) {
   [Appboy sharedInstance].user.avatarImageURL = avatarImageURL;
 }
 
+RCT_EXPORT_METHOD(setLanguage:(NSString *)language) {
+  RCTLogInfo(@"[Appboy sharedInstance].user.language =  %@", language);
+  [Appboy sharedInstance].user.language = language;
+}
+
 RCT_EXPORT_METHOD(setEmailNotificationSubscriptionType:(ABKNotificationSubscriptionType)emailNotificationSubscriptionType callback:(RCTResponseSenderBlock)callback) {
   RCTLogInfo(@"[Appboy sharedInstance].user.emailNotificationSubscriptionType =  %@", @"enum");
   [self reportResultWithCallback:callback andError:nil andResult:@([Appboy sharedInstance].user.emailNotificationSubscriptionType = emailNotificationSubscriptionType)];

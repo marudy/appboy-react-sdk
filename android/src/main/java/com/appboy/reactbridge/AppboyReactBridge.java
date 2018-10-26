@@ -280,6 +280,11 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  public void setLanguage(String language) {
+    Appboy.getInstance(getReactApplicationContext()).getCurrentUser().setLanguage(language);
+  }
+
+  @ReactMethod
   public void setPushNotificationSubscriptionType(String subscriptionType, Callback callback) {
     NotificationSubscriptionType notificationSubscriptionType;
     if (subscriptionType == null) {
