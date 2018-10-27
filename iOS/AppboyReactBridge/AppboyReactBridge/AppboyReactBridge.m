@@ -304,6 +304,10 @@ RCT_EXPORT_METHOD(getUnreadCardCountForCategories:(NSString *)category callback:
 }
 
 RCT_EXPORT_METHOD(getNewsFeedCards:(RCTResponseSenderBlock)callback) {
+    if (self.observer) {
+        [[NSNotificationCenter defaultCenter] removeObserver:self.observer];
+    }
+
     self.observer = [[NSNotificationCenter defaultCenter] addObserverForName:ABKFeedUpdatedNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
         BOOL updateIsSuccessful = [note.userInfo[ABKFeedUpdatedIsSuccessfulKey] boolValue];
         
