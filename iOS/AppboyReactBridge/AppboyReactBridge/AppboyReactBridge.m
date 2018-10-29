@@ -304,21 +304,17 @@ RCT_EXPORT_METHOD(getUnreadCardCountForCategories:(NSString *)category callback:
 }
 
 RCT_EXPORT_METHOD(getNewsFeedCards:(RCTResponseSenderBlock)callback) {
-    if (self.observer) {
-        [[NSNotificationCenter defaultCenter] removeObserver:self.observer];
-    }
-
-    self.observer = [[NSNotificationCenter defaultCenter] addObserverForName:ABKFeedUpdatedNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+    __block __weak id observer = [[NSNotificationCenter defaultCenter] addObserverForName:ABKFeedUpdatedNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+        [[NSNotificationCenter defaultCenter] removeObserver:observer];
+        
         BOOL updateIsSuccessful = [note.userInfo[ABKFeedUpdatedIsSuccessfulKey] boolValue];
         
         if (updateIsSuccessful) {
             NSArray *cards = [[Appboy sharedInstance].feedController getNewsFeedCards];
             [self reportResultWithCallback:callback andError:nil andResult:[self mapCardsToObjects:cards]];
-        }else {
+        } else {
             [self reportResultWithCallback:callback andError:@"An error occurred retrieving the news feed cards" andResult:nil];
         }
-        
-        [[NSNotificationCenter defaultCenter] removeObserver:self.observer];
     }];
     
     [[Appboy sharedInstance] requestFeedRefresh];
