@@ -26,9 +26,14 @@
   if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_9_x_Max) {
     UNUserNotificationCenter* center = [UNUserNotificationCenter currentNotificationCenter];
     center.delegate = self;
-    [center requestAuthorizationWithOptions:(UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge)
+    UNAuthorizationOptions options = UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge;
+    if (@available(iOS 12.0, *)) {
+      options = options | UNAuthorizationOptionProvisional;
+    }
+    [center requestAuthorizationWithOptions:(options)
                           completionHandler:^(BOOL granted, NSError * _Nullable error) {
                             NSLog(@"Permission granted.");
+                            [[Appboy sharedInstance] pushAuthorizationFromUserNotificationCenter:granted];
                           }];
     [[UIApplication sharedApplication] registerForRemoteNotifications];
   } else if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_7_1) {
@@ -45,7 +50,7 @@
   [Appboy startWithApiKey:@"d0555d14-3491-4141-a9f0-ffb83e3c2a2f"
             inApplication:application
         withLaunchOptions:launchOptions];
-
+        
   [[AppboyReactUtils sharedInstance] populateInitialUrlFromLaunchOptions:launchOptions];
 
   return YES;

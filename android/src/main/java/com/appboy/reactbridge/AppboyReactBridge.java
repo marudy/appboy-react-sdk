@@ -17,11 +17,13 @@ import com.appboy.models.cards.Card;
 import com.appboy.models.cards.ShortNewsCard;
 import com.appboy.models.cards.TextAnnouncementCard;
 import com.appboy.models.outgoing.AppboyProperties;
+import com.appboy.models.outgoing.AttributionData;
 import com.appboy.models.outgoing.FacebookUser;
 import com.appboy.models.outgoing.TwitterUser;
 import com.appboy.support.AppboyLogger;
 import com.appboy.ui.activities.AppboyFeedActivity;
 import com.facebook.react.bridge.Arguments;
+import com.appboy.ui.inappmessage.AppboyInAppMessageManager;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -272,6 +274,11 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
   @ReactMethod
   public void setPhoneNumber(String phoneNumber) {
     Appboy.getInstance(getReactApplicationContext()).getCurrentUser().setPhoneNumber(phoneNumber);
+  }
+
+  @ReactMethod
+  public void setLanguage(String language) {
+    Appboy.getInstance(getReactApplicationContext()).getCurrentUser().setLanguage(language);
   }
 
   @ReactMethod
@@ -558,6 +565,27 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
     Appboy.getInstance(getReactApplicationContext()).getCurrentUser().setLocationCustomAttribute(key, latitude, longitude);
     // Always return true as Android doesn't support getting a result from setLocationCustomAttribute().
     reportResultWithCallback(callback, null, true);
+  }
+
+  @ReactMethod
+  public void requestContentCardsRefresh() {
+    Appboy.getInstance(getReactApplicationContext()).requestContentCardsRefresh(false);
+  }
+  
+  @ReactMethod
+  public void hideCurrentInAppMessage() {
+    AppboyInAppMessageManager.getInstance().hideCurrentlyDisplayingInAppMessage(true);
+  }
+
+  @ReactMethod
+  public void setAttributionData(String network, String campaign, String adGroup, String creative) {
+    AttributionData attributionData = new AttributionData(network, campaign, adGroup, creative);
+    Appboy.getInstance(getReactApplicationContext()).getCurrentUser().setAttributionData(attributionData);
+  }
+  
+  @ReactMethod
+  public void getInstallTrackingId(Callback callback) {
+    reportResultWithCallback(callback, null, Appboy.getInstance(getReactApplicationContext()).getInstallTrackingId());
   }
 
   private Month parseMonth(int monthInt) {
