@@ -104,6 +104,25 @@ var ReactAppboy = {
   },
 
   /**
+   * An alias serves as an alternative unique user identifier. Use aliases to identify users along different
+   *    dimensions than your core user ID:
+   *       * Set a consistent identifier for analytics that will follow a given user both before and after they have
+   *         logged in to a mobile app or website.
+   *       * Add the identifiers used by a third party vendor to your Braze users in order to more easily reconcile
+   *         your data externally.
+   *
+   * Note: Each alias consists of two parts: a name for the identifier itself, and a label indicating the type of
+   *    alias. Users can have multiple aliases with different labels, but only one name per label.
+   *
+   * @param {string} aliasName - An identifier for alias name.
+   * @param {string} aliasLabel - An identifier for alias label.
+   */
+  addAlias: function(aliasName, aliasLabel) {
+    AppboyReactBridge.setSDKFlavor();
+    AppboyReactBridge.addAlias(aliasName, aliasLabel);
+  },
+
+  /**
   * This method posts a token to Appboy's servers to associate the token with the current device.
   *
   * @param {string} token - The device's push token.
@@ -120,10 +139,19 @@ var ReactAppboy = {
   *      and can only contain alphanumeric characters and punctuation.
   * @param {object} [eventProperties] - Hash of properties for this event. Keys are limited to 255
   *      characters in length, cannot begin with a $, and can only contain alphanumeric characters and punctuation.
-  *      Values can be numeric, boolean, or strings 255 characters or shorter.
+  *      Values can be numeric, boolean, Date, or strings 255 characters or shorter.
   */
   logCustomEvent: function (eventName, eventProperties) {
     AppboyReactBridge.setSDKFlavor();
+    for (var key in eventProperties) {
+      if (eventProperties[key] instanceof Date){
+        var dateProp = eventProperties[key];
+        eventProperties[key] = {
+          type: "UNIX_timestamp",
+          value: dateProp.valueOf()
+        }
+      }
+    }
     AppboyReactBridge.logCustomEvent(eventName, eventProperties);
   },
 
@@ -149,9 +177,18 @@ var ReactAppboy = {
   *      and at most 100.
   * @param {object} [purchaseProperties] - Hash of properties for this purchase. Keys are limited to 255
   *      characters in length, cannot begin with a $, and can only contain alphanumeric characters and punctuation.
-  *      Values can be numeric, boolean, or strings 255 characters or shorter.
+  *      Values can be numeric, boolean, Date, or strings 255 characters or shorter.
   */
-  logPurchase: function (productId, price, currencyCode, quantity, purchaseProperties) {
+  logPurchase: function(productId, price, currencyCode, quantity, purchaseProperties) {
+    for (var key in purchaseProperties) {
+      if (purchaseProperties[key] instanceof Date){
+        var dateProp = purchaseProperties[key];
+        purchaseProperties[key] = {
+          type: "UNIX_timestamp",
+          value: dateProp.valueOf()
+        }
+      }
+    }
     AppboyReactBridge.logPurchase(productId, price, currencyCode, quantity, purchaseProperties);
   },
 
@@ -247,9 +284,9 @@ var ReactAppboy = {
   * Sets the language for the user.
   * @param {string} language - Should be valid ISO 639-1 language code.
   */
- setLanguage: function(language) {
-  AppboyReactBridge.setLanguage(language);
-},
+  setLanguage: function(language) {
+    AppboyReactBridge.setLanguage(language);
+  },
 
   /**
   * Sets the country for the user.

@@ -41,6 +41,7 @@ import java.lang.Integer;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -100,6 +101,11 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  public void addAlias(String aliasName, String aliasLabel) {
+    Appboy.getInstance(getReactApplicationContext()).getCurrentUser().addAlias(aliasName, aliasLabel);
+  }
+
+  @ReactMethod
   public void registerPushToken(String token) {
     Appboy.getInstance(getReactApplicationContext()).registerAppboyPushMessages(token);
   }
@@ -127,11 +133,22 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
             try {
               properties.addProperty(key, eventProperties.getInt(key));
             } catch (Exception e2) {
-              AppboyLogger.e(TAG, "Could not parse ReadableType.Number from ReadableMap");
+              AppboyLogger.e(TAG, "Could not parse ReadableType.Number from ReadableMap for key: " + key);
             }
           }
+        } else if (readableType == ReadableType.Map) {
+          try {
+            if (eventProperties.getMap(key).getString("type").equals("UNIX_timestamp")) {
+              double unixTimestamp = eventProperties.getMap(key).getDouble("value");
+              properties.addProperty(key, new Date((long)unixTimestamp));
+            } else {
+              AppboyLogger.e(TAG, "Unsupported ReadableMap type received for key: " + key);
+            }
+          } catch (Exception e) {
+            AppboyLogger.e(TAG, "Could not determine type from ReadableMap for key: " + key);
+          }
         } else {
-          AppboyLogger.e(TAG, "Could not map ReadableType to an AppboyProperty value");
+          AppboyLogger.e(TAG, "Could not map ReadableType to an AppboyProperty value for key: " + key);
         }
       }
     }
@@ -571,7 +588,7 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
   public void requestContentCardsRefresh() {
     Appboy.getInstance(getReactApplicationContext()).requestContentCardsRefresh(false);
   }
-  
+
   @ReactMethod
   public void hideCurrentInAppMessage() {
     AppboyInAppMessageManager.getInstance().hideCurrentlyDisplayingInAppMessage(true);
@@ -582,7 +599,7 @@ public class AppboyReactBridge extends ReactContextBaseJavaModule {
     AttributionData attributionData = new AttributionData(network, campaign, adGroup, creative);
     Appboy.getInstance(getReactApplicationContext()).getCurrentUser().setAttributionData(attributionData);
   }
-  
+
   @ReactMethod
   public void getInstallTrackingId(Callback callback) {
     reportResultWithCallback(callback, null, Appboy.getInstance(getReactApplicationContext()).getInstallTrackingId());
