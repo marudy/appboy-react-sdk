@@ -1,4 +1,12 @@
 const AppboyReactBridge = require('react-native').NativeModules.AppboyReactBridge;
+const Platform = require('react-native').Platform;
+const NativeEventEmitter = require('react-native').NativeEventEmitter;
+const DeviceEventEmitter = require('react-native').DeviceEventEmitter;
+
+const AppboyEventEmitter = Platform.select({
+  ios: new NativeEventEmitter(AppboyReactBridge),
+  android: DeviceEventEmitter
+});
 
 /**
 * This default callback logs errors and null or false results. AppboyReactBridge methods with callbacks will
@@ -104,11 +112,32 @@ var ReactAppboy = {
   },
 
   /**
+   * An alias serves as an alternative unique user identifier. Use aliases to identify users along different
+   *    dimensions than your core user ID:
+   *       * Set a consistent identifier for analytics that will follow a given user both before and after they have
+   *         logged in to a mobile app or website.
+   *       * Add the identifiers used by a third party vendor to your Braze users in order to more easily reconcile
+   *         your data externally.
+   *
+   * Note: Each alias consists of two parts: a name for the identifier itself, and a label indicating the type of
+   *    alias. Users can have multiple aliases with different labels, but only one name per label.
+   *
+   * @param {string} aliasName - An identifier for alias name.
+   * @param {string} aliasLabel - An identifier for alias label.
+   */
+  addAlias: function(aliasName, aliasLabel) {
+    AppboyReactBridge.setSDKFlavor();
+    AppboyReactBridge.addAlias(aliasName, aliasLabel);
+  },
+
+  /**
   * This method posts a token to Appboy's servers to associate the token with the current device.
+  *
+  * No-op on iOS.
   *
   * @param {string} token - The device's push token.
   */
-  registerPushToken: function (token) {
+  registerPushToken: function(token) {
     AppboyReactBridge.registerPushToken(token);
   },
 
@@ -120,10 +149,19 @@ var ReactAppboy = {
   *      and can only contain alphanumeric characters and punctuation.
   * @param {object} [eventProperties] - Hash of properties for this event. Keys are limited to 255
   *      characters in length, cannot begin with a $, and can only contain alphanumeric characters and punctuation.
-  *      Values can be numeric, boolean, or strings 255 characters or shorter.
+  *      Values can be numeric, boolean, Date, or strings 255 characters or shorter.
   */
   logCustomEvent: function (eventName, eventProperties) {
     AppboyReactBridge.setSDKFlavor();
+    for (var key in eventProperties) {
+      if (eventProperties[key] instanceof Date){
+        var dateProp = eventProperties[key];
+        eventProperties[key] = {
+          type: "UNIX_timestamp",
+          value: dateProp.valueOf()
+        }
+      }
+    }
     AppboyReactBridge.logCustomEvent(eventName, eventProperties);
   },
 
@@ -149,21 +187,20 @@ var ReactAppboy = {
   *      and at most 100.
   * @param {object} [purchaseProperties] - Hash of properties for this purchase. Keys are limited to 255
   *      characters in length, cannot begin with a $, and can only contain alphanumeric characters and punctuation.
-  *      Values can be numeric, boolean, or strings 255 characters or shorter.
+  *      Values can be numeric, boolean, Date, or strings 255 characters or shorter.
   */
-  logPurchase: function (productId, price, currencyCode, quantity, purchaseProperties) {
-    AppboyReactBridge.logPurchase(productId, price, currencyCode, quantity, purchaseProperties);
-  },
 
-  /**
-  * Submits feedback to Appboy.
-  * @param {string} email - The email of the user submitting feedback.
-  * @param {string} feedback - The content of the user feedback.
-  * @param {boolean} isBug - If the feedback is reporting a bug or not.
-  * @param {function(error, result)} callback - A callback that receives the function call result.
-  */
-  submitFeedback: function (email, feedback, isBug, callback) {
-    callFunctionWithCallback(AppboyReactBridge.submitFeedback, [email, feedback, isBug], callback);
+  logPurchase: function(productId, price, currencyCode, quantity, purchaseProperties) {
+    for (var key in purchaseProperties) {
+      if (purchaseProperties[key] instanceof Date){
+        var dateProp = purchaseProperties[key];
+        purchaseProperties[key] = {
+          type: "UNIX_timestamp",
+          value: dateProp.valueOf()
+        }
+      }
+    }
+    AppboyReactBridge.logPurchase(productId, price, currencyCode, quantity, purchaseProperties);
   },
 
   // Appboy user methods
@@ -247,9 +284,9 @@ var ReactAppboy = {
   * Sets the language for the user.
   * @param {string} language - Should be valid ISO 639-1 language code.
   */
- setLanguage: function(language) {
-  AppboyReactBridge.setLanguage(language);
-},
+  setLanguage: function(language) {
+    AppboyReactBridge.setLanguage(language);
+  },
 
   /**
   * Sets the country for the user.
@@ -418,6 +455,55 @@ var ReactAppboy = {
     AppboyReactBridge.launchNewsFeed();
   },
 
+  // Content Cards
+  /**
+  * Launches the Content Cards UI element.
+  */
+  launchContentCards: function() {
+    AppboyReactBridge.launchContentCards();
+  },
+
+  /**
+   * Returns a content cards array
+   * @returns {Promise<ContentCard[]>}
+   */
+  getContentCards: function() {
+    return AppboyReactBridge.getContentCards();
+  },
+
+  /**
+   * Manually log a click to Braze for a particular card.
+   * The SDK will only log a card click when the card has the url property with a valid value.
+   * @param {string} id
+   */
+  logContentCardClicked: function(id) {
+    AppboyReactBridge.logContentCardClicked(id);
+  },
+
+  /**
+   * Manually log a dismissal to Braze for a particular card.
+   * @param {string} id
+   */
+  logContentCardDismissed: function(id) {
+    AppboyReactBridge.logContentCardDismissed(id);
+  },
+
+  /**
+   * Manually log an impression to Braze for a particular card.
+   * @param {string} id
+   */
+  logContentCardImpression: function(id) {
+    AppboyReactBridge.logContentCardImpression(id);
+  },
+
+  /**
+   * When displaying the Content Cards in your own user interface,
+   * you can manually record Content Cards impressions via the method logContentCardsDisplayed;
+   */
+  logContentCardsDisplayed: function() {
+    AppboyReactBridge.logContentCardsDisplayed();
+  },
+
   /**
    * Requests a News Feed refresh.
    */
@@ -540,6 +626,18 @@ var ReactAppboy = {
     AppboyReactBridge.hideCurrentInAppMessage();
   },
 
+  // Events
+  /**
+   * Subscribes to the specific SDK event.
+   * When you want to stop listening, call `.remove()` on the returned
+   * subscription.
+   * @param {Events} event
+   * @param {function} subscriber
+   */
+  addListener: function(event, subscriber) {
+    return AppboyEventEmitter.addListener(event, subscriber);
+  },
+
   // Enums
   CardCategory: {
     'ADVERTISING': 'advertising',
@@ -565,12 +663,15 @@ var ReactAppboy = {
     'UNKNOWN': 'u'
   },
 
-  NewsFeedLaunchOptions: {
-    'CARD_WIDTH_FOR_IPHONE': 'cardWidthForiPhone',
-    'CARD_WIDTH_FOR_IPAD': 'cardWidthForiPad',
-    'MINIMUM_CARD_MARGIN_FOR_IPHONE': 'minimumCardMarginForiPhone',
-    'MINIMUM_CARD_MARGIN_FOR_IPAD': 'minimumCardMarginForiPad'
-  }
+  ContentCardTypes: {
+    'CLASSIC': 'Classic',
+    'BANNER': 'Banner',
+    'CAPTIONED': 'Captioned'
+  },
+
+  Events: {
+    'CONTENT_CARDS_UPDATED': 'contentCardsUpdated'
+  },
 };
 
 module.exports = ReactAppboy;

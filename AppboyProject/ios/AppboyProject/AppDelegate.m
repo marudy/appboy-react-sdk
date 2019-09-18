@@ -69,7 +69,7 @@
 }
 
 - (void) application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
-  [[Appboy sharedInstance] registerPushToken:[NSString stringWithFormat:@"%@", deviceToken]];
+  [[Appboy sharedInstance] registerDeviceToken:deviceToken];
 }
 
 
