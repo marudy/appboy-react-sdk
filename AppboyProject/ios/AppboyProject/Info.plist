@@ -4,6 +4,8 @@
 <dict>
 	<key>Appboy</key>
 	<dict>
+		<key>LogLevel</key>
+		<string>0</string>
 		<key>Endpoint</key>
 		<string>sondheim.appboy.com</string>
 	</dict>
@@ -55,6 +57,10 @@
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
