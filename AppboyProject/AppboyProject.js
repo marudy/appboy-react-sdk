@@ -19,19 +19,20 @@ class AppboyProject extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      userIdText : 'theAppboyTestUser',
+      userIdText : '',
       customEventText : '',
       subscriptionState : 's',
       gender : 'm',
       message: 'Success',
       toastVisible: 0
     };
+    this._getInstallTrackingId = this._getInstallTrackingId.bind(this);
     this._updateCardCount = this._updateCardCount.bind(this);
     this._changeUserPress = this._changeUserPress.bind(this);
     this._logCustomEventPress = this._logCustomEventPress.bind(this);
     this._setSubscriptionStatePress = this._setSubscriptionStatePress.bind(this);
     this._logPurchasePress = this._logPurchasePress.bind(this);
-    this._submitFeedbackPress = this._submitFeedbackPress.bind(this);
+    this._setLanguagePress = this._setLanguagePress.bind(this);
     this._logCustomAttributePress = this._logCustomAttributePress.bind(this);
     this._logUserPropertiesPress = this._logUserPropertiesPress.bind(this);
     this._unsetCustomUserAttributePress = this._unsetCustomUserAttributePress.bind(this);
@@ -48,6 +49,10 @@ class AppboyProject extends Component {
     this._requestLocationInitialization = this._requestLocationInitialization.bind(this);
     this._setLocationCustomAttribute = this._setLocationCustomAttribute.bind(this);
     this._setGenderPress = this._setGenderPress.bind(this);
+    this._requestContentCardsRefresh = this._requestContentCardsRefresh.bind(this);
+    this._hideCurrentInAppMessage = this._hideCurrentInAppMessage.bind(this);
+    this._setAttributionData = this._setAttributionData.bind(this);
+    this._getContentCards = this._getContentCards.bind(this);
   }
 
   componentDidMount() {
@@ -76,6 +81,10 @@ class AppboyProject extends Component {
         that._handleOpenUrl({url});
       }
     });
+
+    ReactAppboy.addListener(ReactAppboy.Events.CONTENT_CARDS_UPDATED, function() {
+      console.log('Content Cards Updated.');
+    })
   }
 
   componentWillUnmount() {
@@ -143,13 +152,18 @@ class AppboyProject extends Component {
             <Text>Log Custom Event</Text>
           </TouchableHighlight>
         </View>
+        <View style={styles.row}>
+          <TextInput
+            style={styles.textInput}
+            onChangeText={(languageText) => this.setState({languageText})}/>
+          <TouchableHighlight
+            onPress={this._setLanguagePress}>
+            <Text>Set Language</Text>
+          </TouchableHighlight>
+        </View>
         <TouchableHighlight
           onPress={this._logPurchasePress}>
           <Text>Log Purchase</Text>
-        </TouchableHighlight>
-        <TouchableHighlight
-          onPress={this._submitFeedbackPress}>
-          <Text>Submit Feedback</Text>
         </TouchableHighlight>
         <TouchableHighlight
           onPress={this._logCustomAttributePress}>
@@ -158,6 +172,10 @@ class AppboyProject extends Component {
         <TouchableHighlight
           onPress={this._logUserPropertiesPress}>
           <Text>Set User Properties</Text>
+        </TouchableHighlight>
+        <TouchableHighlight
+          onPress={this._hideCurrentInAppMessage}>
+          <Text>Dismiss In App Message</Text>
         </TouchableHighlight>
         <View style={styles.row}>
           <Picker
@@ -192,12 +210,6 @@ class AppboyProject extends Component {
             <Text>Set Gender</Text>
           </TouchableHighlight>
         </View>
-        { Platform.OS === 'ios' ?
-        <TouchableHighlight
-          onPress={this._launchFeedbackPress}>
-          <Text>Launch Feedback</Text>
-        </TouchableHighlight>
-        : false }
         <TouchableHighlight
           onPress={this._unsetCustomUserAttributePress}>
           <Text>Unset Custom User Attributes</Text>
@@ -234,6 +246,14 @@ class AppboyProject extends Component {
           <Text>Request Feed Refresh</Text>
         </TouchableHighlight>
         <TouchableHighlight
+          onPress={this._launchContentCardsPress}>
+          <Text>Launch Content Cards</Text>
+        </TouchableHighlight>
+        <TouchableHighlight
+          onPress={this._requestContentCardsRefresh}>
+          <Text>Request Content Cards Refresh</Text>
+        </TouchableHighlight>
+        <TouchableHighlight
           onPress={this._requestImmediateDataFlush}>
           <Text>Request Immediate Data Flush</Text>
         </TouchableHighlight>
@@ -259,6 +279,18 @@ class AppboyProject extends Component {
           onPress={this._setLocationCustomAttribute}>
           <Text>Set Custom Location Attribute</Text>
         </TouchableHighlight>
+        <TouchableHighlight
+          onPress={this._setAttributionData}>
+          <Text>Set Attribution Data</Text>
+        </TouchableHighlight>
+        <TouchableHighlight
+          onPress={this._getInstallTrackingId}>
+          <Text>Get Install Tracking ID</Text>
+        </TouchableHighlight>
+        <TouchableHighlight
+          onPress={this._getContentCards}>
+          <Text>Request Cached Content Cards</Text>
+        </TouchableHighlight>
         </ScrollView>
     );
   }
@@ -277,8 +309,14 @@ class AppboyProject extends Component {
     this._showToast('User changed to: ' + this.state.userIdText);
   }
   _logCustomEventPress(event) {
-    ReactAppboy.logCustomEvent(this.state.customEventText, {'p1': 'p2'});
+    var testDate = new Date();
+    ReactAppboy.logCustomEvent(this.state.customEventText, {'stringKey': 'stringValue', 'intKey': 42, 'floatKey': 1.23, 'boolKey': true, 'dateKey': testDate});
+    ReactAppboy.logCustomEvent(this.state.customEventText + 'NoProps');
     this._showToast('Event logged: ' + this.state.customEventText);
+  }
+  _setLanguagePress(event) {
+    ReactAppboy.setLanguage(this.state.languageText);
+    this._showToast('Language changed to: ' + this.state.languageText);
   }
   _setSubscriptionStatePress(event) {
     console.log('Received request to change subscription state for email and push to ' + this.state.subscriptionState);
@@ -319,12 +357,10 @@ class AppboyProject extends Component {
     }
   }
   _logPurchasePress(event) {
-    ReactAppboy.logPurchase('reactProductIdentifier', '1.2', 'USD', 2, {'pp1': 'pp2'});
+    var testDate = new Date();
+    ReactAppboy.logPurchase('reactProductIdentifier', '1.2', 'USD', 2, {'stringKey': 'stringValue', 'intKey': 42, 'floatKey': 1.23, 'boolKey': true, 'dateKey': testDate});
+    ReactAppboy.logPurchase('reactProductIdentifier' + 'NoProps', '1.2', 'USD', 2);
     this._showToast('Purchase logged');
-  }
-  _submitFeedbackPress(event) {
-    ReactAppboy.submitFeedback('test@test.com', 'great app asdf', true);
-    this._showToast('Feedback submitted');
   }
   _logCustomAttributePress(event) {
     ReactAppboy.setCustomUserAttribute('sk', 'sv');
@@ -353,13 +389,14 @@ class AppboyProject extends Component {
     ReactAppboy.setAvatarImageUrl('https://raw.githubusercontent.com/Appboy/appboy-react-sdk/master/braze-logo.png');
     ReactAppboy.setEmailNotificationSubscriptionType(ReactAppboy.NotificationSubscriptionTypes.UNSUBSCRIBED);
     ReactAppboy.setPushNotificationSubscriptionType(ReactAppboy.NotificationSubscriptionTypes.SUBSCRIBED);
+    ReactAppboy.addAlias('arrayattr', 'alias-label-1');
     this._showToast('User properties set');
   }
   _launchNewsFeedPress(event) {
     ReactAppboy.launchNewsFeed();
   }
-  _launchFeedbackPress(event) {
-    ReactAppboy.launchFeedback();
+  _launchContentCardsPress(event) {
+    ReactAppboy.launchContentCards();
   }
   _unsetCustomUserAttributePress(event) {
     ReactAppboy.unsetCustomUserAttribute('sk');
@@ -452,6 +489,55 @@ class AppboyProject extends Component {
   _setLocationCustomAttribute(event) {
     ReactAppboy.setLocationCustomAttribute("work", 40.7128, 74.0060);
     this._showToast('Location Set');
+  }
+
+  _requestContentCardsRefresh(event) {
+    ReactAppboy.requestContentCardsRefresh();
+    this._showToast('Content Cards Refreshed');
+  }
+
+  _hideCurrentInAppMessage(event) {
+    ReactAppboy.hideCurrentInAppMessage();
+    this._showToast('Message dismissed');
+  }
+
+  _setAttributionData(event) {
+    var network = "fakeblock";
+    var campaign = "everyone";
+    var adGroup = "adgroup1";
+    var creative = "bigBanner";
+    ReactAppboy.setAttributionData(network, campaign, adGroup, creative);
+    this._showToast('Attribution Data Set');
+  }
+
+  _getInstallTrackingId(event) {
+    ReactAppboy.getInstallTrackingId((err, res) => {
+      if (err) {
+        console.log('Error is ' + err);
+      } else {
+        this._showToast('Install tracking ID: ' + res);
+      }
+    });
+  }
+
+  _getContentCards(event) {
+    ReactAppboy.getContentCards().then(function(result) {
+      if (result === undefined || result.length == 0) {
+        console.log('No cached Content Cards Found.');
+      } else {
+        console.log(result.length + ' cached Content Cards Found.');
+        for (var i = 0; i < result.length; i++) {
+          var cardId = result[i].id;
+          console.log('Got content card: ' + JSON.stringify(result[i]));
+          ReactAppboy.logContentCardClicked(cardId);
+          ReactAppboy.logContentCardImpression(cardId);
+          // ReactAppboy.logContentCardDismissed(cardId);
+        }
+        ReactAppboy.logContentCardsDisplayed(cardId);
+      }
+    }).catch(function () {
+      console.log("Content Cards Promise Rejected");
+    });
   }
 }
 
