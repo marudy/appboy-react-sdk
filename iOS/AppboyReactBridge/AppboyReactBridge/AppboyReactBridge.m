@@ -183,11 +183,6 @@ RCT_EXPORT_METHOD(setGender:(NSString *)gender callback:(RCTResponseSenderBlock)
   }
 }
 
-RCT_EXPORT_METHOD(setLanguage:(NSString *)language) {
-  RCTLogInfo(@"[Appboy sharedInstance].user.language =  %@", language);
-  [Appboy sharedInstance].user.language = language;
-}
-
 RCT_EXPORT_METHOD(setPhoneNumber:(NSString *)phone) {
   RCTLogInfo(@"[Appboy sharedInstance].user.phone =  %@", phone);
   [Appboy sharedInstance].user.phone = phone;
