@@ -515,14 +515,6 @@ RCT_EXPORT_METHOD(logCardClicked:(NSString *)idString) {
     }
 }
 
-RCT_EXPORT_METHOD(launchFeedback) {
-  RCTLogInfo(@"launchFeedback called");
-  ABKModalFeedbackViewController *feedbackModal = [[ABKModalFeedbackViewController alloc] init];
-  UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
-  UIViewController *mainViewController = keyWindow.rootViewController;
-  [mainViewController presentViewController:feedbackModal animated:YES completion:nil];
-}
-
 - (void)feedUpdatedNotificationReceived:(RCTResponseSenderBlock)callback {
     
 }
