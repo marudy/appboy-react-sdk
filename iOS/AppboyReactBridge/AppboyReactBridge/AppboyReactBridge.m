@@ -380,7 +380,7 @@ static NSDictionary *RCTFormatContentCard(ABKContentCard *card) {
   formattedContentCardData[@"created"] = @(card.created);
   formattedContentCardData[@"expiresAt"] = @(card.expiresAt);
   formattedContentCardData[@"viewed"] = @(card.viewed);
-  // formattedContentCardData[@"clicked"] = @(card.clicked);
+  formattedContentCardData[@"clicked"] = @(card.clicked);
   formattedContentCardData[@"pinned"] = @(card.pinned);
   formattedContentCardData[@"dismissed"] = @(card.dismissed);
   formattedContentCardData[@"dismissible"] = @(card.dismissible);
